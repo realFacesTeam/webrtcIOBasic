@@ -30,10 +30,10 @@ function subdivideVideos() {
 function setWH(video, i) {
   var perRow = getNumPerRow();
   var perColumn = Math.ceil(videos.length / perRow);
-  var width = Math.floor((window.innerWidth) / perRow);
+  var width = 200 //Math.floor((window.innerWidth) / perRow);
   var height = Math.floor((window.innerHeight - 190) / perColumn);
-  video.width = width;
-  video.height = height;
+  video.width = 200;
+  video.height = 200;
   video.style.position = "absolute";
   video.style.left = (i % perRow) * width + "px";
   video.style.top = Math.floor(i / perRow) * height + "px";
@@ -56,30 +56,12 @@ function removeVideo(socketId) {
   }
 }
 
-function addToChat(msg, color) {
-  var messages = document.getElementById('messages');
-  msg = sanitize(msg);
-  if(color) {
-    msg = '<span style="color: ' + color + '; padding-left: 15px">' + msg + '</span>';
-  } else {
-    msg = '<strong style="padding-left: 15px">' + msg + '</strong>';
-  }
-  messages.innerHTML = messages.innerHTML + msg + '<br>';
-  messages.scrollTop = 10000;
-}
+
 
 function sanitize(msg) {
   return msg.replace(/</g, '&lt;');
 }
 
-function initFullScreen() {
-  var button = document.getElementById("fullscreen");
-  button.addEventListener('click', function(event) {
-    var elem = document.getElementById("videos");
-    //show full screen
-    elem.webkitRequestFullScreen();
-  });
-}
 
 function initNewRoom() {
   var button = document.getElementById("newRoom");
@@ -96,7 +78,7 @@ function initNewRoom() {
 
     window.location.hash = randomstring;
     location.reload();
-  })
+  });
 }
 
 
@@ -123,55 +105,6 @@ var dataChannelChat = {
   event: 'data stream data'
 };
 
-function initChat() {
-  var chat;
-
-  if(rtc.dataChannelSupport) {
-    console.log('initializing data channel chat');
-    chat = dataChannelChat;
-  } else {
-    console.log('initializing websocket chat');
-    chat = websocketChat;
-  }
-
-  var input = document.getElementById("chatinput");
-  var toggleHideShow = document.getElementById("hideShowMessages");
-  var room = window.location.hash.slice(1);
-  var color = "#" + ((1 << 24) * Math.random() | 0).toString(16);
-
-  toggleHideShow.addEventListener('click', function() {
-    var element = document.getElementById("messages");
-
-    if(element.style.display === "block") {
-      element.style.display = "none";
-    }
-    else {
-      element.style.display = "block";
-    }
-
-  });
-
-  input.addEventListener('keydown', function(event) {
-    var key = event.which || event.keyCode;
-    if(key === 13) {
-      chat.send(JSON.stringify({
-        "eventName": "chat_msg",
-        "data": {
-          "messages": input.value,
-          "room": room,
-          "color": color
-        }
-      }));
-      addToChat(input.value);
-      input.value = "";
-    }
-  }, false);
-  rtc.on(chat.event, function() {
-    var data = chat.recv.apply(this, arguments);
-    console.log(data.color);
-    addToChat(data.messages, data.color.toString(16));
-  });
-}
 
 
 function init() {
@@ -184,7 +117,7 @@ function init() {
       document.getElementById('you').play();
       //videos.push(document.getElementById('you'));
       //rtc.attachStream(stream, 'you');
-      //subdivideVideos();
+      subdivideVideos();
     });
   } else {
     alert('Your browser is not supported or you have to turn on flags. In chrome you go to chrome://flags and turn on Enable PeerConnection remember to restart chrome');
@@ -206,9 +139,7 @@ function init() {
     console.log('remove ' + data);
     removeVideo(data);
   });
-  initFullScreen();
   initNewRoom();
-  initChat();
 }
 
 window.onresize = function(event) {
